@@ -4,6 +4,12 @@
 import sys
 from pathlib import Path
 
+import logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(levelname)s - %(message)s'
+)
+logger = logging.getLogger(__name__)
 # Add src to path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -121,7 +127,7 @@ def rolling_origin_ets(
         last_pred = forecast
 
     mean_mae = float(np.mean(maes)) if maes else float("nan")
-    print(f"ETS rolling-origin MAE: {mean_mae:.3f}")
+    logger.info(f"ETS rolling-origin MAE: {mean_mae:.3f}")
     return mean_mae, last_true, last_pred
 
 
@@ -208,7 +214,7 @@ def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: Optional
     fig.tight_layout()
     save_plot(fig, config.ets_plot, dpi=300)
     plt.close(fig)
-    print(f" ETS plot saved -> {config.ets_plot}")
+    logger.info(f" ETS plot saved -> {config.ets_plot}")
 
 
 def plot_generation_comparison(series: pd.Series, config: Config) -> None:
@@ -267,7 +273,7 @@ def plot_generation_comparison(series: pd.Series, config: Config) -> None:
     fig.tight_layout()
     save_plot(fig, config.comparison_plot, dpi=300)
     plt.close(fig)
-    print(f" ETS vs SARIMAX plot saved -> {config.comparison_plot}")
+    logger.info(f" ETS vs SARIMAX plot saved -> {config.comparison_plot}")
 
 
 def main() -> None:
@@ -282,7 +288,7 @@ def main() -> None:
     
     # Load series using consolidated loader
     series = load_series(config)
-    print(f"Loaded {len(series)} data points")
+    logger.info(f"Loaded {len(series)} data points")
     
     # Rolling origin evaluation
     _, last_true, last_pred = rolling_origin_ets(series, config)
@@ -294,7 +300,7 @@ def main() -> None:
     # Plot comparison
     plot_generation_comparison(series, config)
     
-    print("\n Exponential smoothing analysis complete")
+    logger.info("\n Exponential smoothing analysis complete")
 
 
 if __name__ == "__main__":
