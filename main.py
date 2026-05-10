@@ -131,7 +131,7 @@ def rolling_origin_ets(
     return mean_mae, last_true, last_pred
 
 
-def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: Optional[pd.Series]) -> None:
+def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: Optional[pd.Series], plot: bool = False) -> None:
     """Plot ETS forecast with confidence intervals."""
     start_2024 = pd.Timestamp("2024-01-01")
     history_end = pd.Timestamp("2024-12-01")
@@ -155,69 +155,70 @@ def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: Optional
     upper = forecast + 1.96 * sigma
     lower = forecast - 1.96 * sigma
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(history.index, history.values, color="#555555", lw=1.5, label="History")
-    ax.axvline(config.forecast_start, color="#777777", linestyle="--", lw=1)
+    if plot:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(history.index, history.values, color="#555555", lw=1.5, label="History")
+        ax.axvline(config.forecast_start, color="#777777", linestyle="--", lw=1)
     
-    if not actual.empty:
-        ax.plot(actual.index, actual.values, color="#1f77b4", lw=1.8, label="Actual")
+        if not actual.empty:
+            ax.plot(actual.index, actual.values, color="#1f77b4", lw=1.8, label="Actual")
     
-    ax.fill_between(
-        forecast.index, lower.values, upper.values, color="red", alpha=0.08, linewidth=0
-    )
-    ax.plot(forecast.index, forecast.values, color="red", lw=2.0, label="Forecast")
+        ax.fill_between(
+            forecast.index, lower.values, upper.values, color="red", alpha=0.08, linewidth=0
+        )
+        ax.plot(forecast.index, forecast.values, color="red", lw=2.0, label="Forecast")
 
-    from matplotlib.ticker import MaxNLocator, StrMethodFormatter
+        from matplotlib.ticker import MaxNLocator, StrMethodFormatter
 
-    ax.yaxis.set_major_locator(MaxNLocator(4))
-    ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-    ax.grid(False)
-    ax.set_xlabel("")
-    ax.set_title("EIA Net Generation — ETS forecast Jan–Aug 2025")
-    ax.legend(loc="best")
+        ax.yaxis.set_major_locator(MaxNLocator(4))
+        ax.yaxis.set_major_formatter(StrMethodFormatter("{x:,.0f}"))
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+        ax.grid(False)
+        ax.set_xlabel("")
+        ax.set_title("EIA Net Generation — ETS forecast Jan–Aug 2025")
+        ax.legend(loc="best")
 
-    if not history.empty:
+        if not history.empty:
+            ax.annotate(
+                "History (2024)",
+                xy=(history.index[-1], history.values[-1]),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#555555",
+            )
+        if not actual.empty:
+            ax.annotate(
+                "Actual (Jan–Aug 2025)",
+                xy=(actual.index[-1], actual.values[-1]),
+                xytext=(6, 0),
+                textcoords="offset points",
+                fontsize=9,
+                va="center",
+                ha="left",
+                color="#1f77b4",
+            )
         ax.annotate(
-            "History (2024)",
-            xy=(history.index[-1], history.values[-1]),
+            "Forecast",
+            xy=(forecast.index[-1], forecast.values[-1]),
             xytext=(6, 0),
             textcoords="offset points",
             fontsize=9,
             va="center",
             ha="left",
-            color="#555555",
+            color="red",
         )
-    if not actual.empty:
-        ax.annotate(
-            "Actual (Jan–Aug 2025)",
-            xy=(actual.index[-1], actual.values[-1]),
-            xytext=(6, 0),
-            textcoords="offset points",
-            fontsize=9,
-            va="center",
-            ha="left",
-            color="#1f77b4",
-        )
-    ax.annotate(
-        "Forecast",
-        xy=(forecast.index[-1], forecast.values[-1]),
-        xytext=(6, 0),
-        textcoords="offset points",
-        fontsize=9,
-        va="center",
-        ha="left",
-        color="red",
-    )
 
-    fig.tight_layout()
-    save_plot(fig, config.ets_plot, dpi=300)
-    plt.close(fig)
+        fig.tight_layout()
+        save_plot(fig, config.ets_plot, dpi=300)
+        plt.close(fig)
     logger.info(f" ETS plot saved -> {config.ets_plot}")
 
 
-def plot_generation_comparison(series: pd.Series, config: Config) -> None:
+def plot_generation_comparison(series: pd.Series, config: Config, plot: bool = False) -> None:
     """Plot comparison between ETS and SARIMAX."""
     ets_model = ExponentialSmoothing(
         series,
@@ -244,35 +245,36 @@ def plot_generation_comparison(series: pd.Series, config: Config) -> None:
     actual = series.loc[forecast_index[0] : forecast_index[-1]]
     history = series.loc[:history_end]
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(history.index, history.values, label="History", color="#888888", lw=1.5)
+    if plot:
+        fig, ax = plt.subplots(figsize=(10, 5))
+        ax.plot(history.index, history.values, label="History", color="#888888", lw=1.5)
     
-    if not actual.empty:
-        ax.plot(actual.index, actual.values, label="Actual", color="#444444", lw=1.8)
+        if not actual.empty:
+            ax.plot(actual.index, actual.values, label="Actual", color="#444444", lw=1.8)
     
-    ax.plot(
-        forecast_index,
-        ets_forecast.values,
-        label="ETS forecast",
-        color="#d62728",
-        lw=2.0,
-    )
-    ax.plot(
-        forecast_index,
-        sarimax_forecast.values,
-        label="SARIMAX forecast",
-        color="#1f77b4",
-        lw=2.0,
-    )
+        ax.plot(
+            forecast_index,
+            ets_forecast.values,
+            label="ETS forecast",
+            color="#d62728",
+            lw=2.0,
+        )
+        ax.plot(
+            forecast_index,
+            sarimax_forecast.values,
+            label="SARIMAX forecast",
+            color="#1f77b4",
+            lw=2.0,
+        )
 
-    ax.set_title("ETS vs SARIMAX — last fold comparison")
-    ax.set_xlabel("")
-    ax.grid(False)
-    ax.legend(frameon=False)
+        ax.set_title("ETS vs SARIMAX — last fold comparison")
+        ax.set_xlabel("")
+        ax.grid(False)
+        ax.legend(frameon=False)
 
-    fig.tight_layout()
-    save_plot(fig, config.comparison_plot, dpi=300)
-    plt.close(fig)
+        fig.tight_layout()
+        save_plot(fig, config.comparison_plot, dpi=300)
+        plt.close(fig)
     logger.info(f" ETS vs SARIMAX plot saved -> {config.comparison_plot}")
 
 
