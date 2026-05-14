@@ -12,17 +12,17 @@ Think of it like giving more attention to what just happened while not completel
 
 There are three main types of exponential smoothing methods:
 
-- **Simple Exponential Smoothing (SES):** Best for data without trends or seasonality.
+- Simple Exponential Smoothing (SES): Best for data without trends or seasonality.
 
-- **Double Exponential Smoothing (DES):** Captures linear trends but no seasonality.
+- Double Exponential Smoothing (DES): Captures linear trends but no seasonality.
 
-- **Triple Exponential Smoothing (Holt-Winters):** Captures both trends and seasonality.
+- Triple Exponential Smoothing (Holt-Winters): Captures both trends and seasonality.
 
 ## Simple Exponential Smoothing (SES)
 
 Simple Exponential Smoothing is used when the data has no trend or seasonality. It works by averaging past values but gives more weight to recent observations.
 
-**Example: Beehive Weight Without Trend or Seasonality** Imagine you're monitoring the daily weight of a beehive. The weight changes slightly every day, but there's no clear trend or seasonal pattern.
+Example: Beehive Weight Without Trend or Seasonality Imagine you're monitoring the daily weight of a beehive. The weight changes slightly every day, but there's no clear trend or seasonal pattern.
 
 from statsmodels.tsa.holtwinters import SimpleExpSmoothing
 
@@ -47,7 +47,7 @@ Double Exponential Smoothing is suitable for data with a trend but no seasonalit
 
 - A trend estimate that adjusts the forecast as the data grows or declines.
 
-**Example: Beehive Weight with a Growing Trend** Imagine your beehive is steadily gaining weight as the bees produce more honey.
+Example: Beehive Weight with a Growing Trend Imagine your beehive is steadily gaining weight as the bees produce more honey.
 
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
 
@@ -66,7 +66,7 @@ plt.figure(figsize=(10, 6)) plt.plot(time, data, label="Original Data", marker="
 
 Triple Exponential Smoothing, also known as Holt-Winters, is used when the data has both a trend and a seasonal pattern. It adds a seasonal component to handle repeating patterns.
 
-**Example: Beehive Weight with Trend and Seasonality** Imagine bee activity follows a seasonal cycle, with predictable increases and decreases every month.
+Example: Beehive Weight with Trend and Seasonality Imagine bee activity follows a seasonal cycle, with predictable increases and decreases every month.
 
     # Generate synthetic seasonal data
 data = 10 + 0.5 * time + 2 * np.sin(2 * np.pi * time / 12) + np.random.normal(scale=1.0, size=len(time))
@@ -85,17 +85,17 @@ Exponential Smoothing is simple to implement and interpret. It can be applied to
 
 ## Drawbacks of Exponential Smoothing
 
-- **Limited Complexity:** Cannot model complex patterns or multiple seasonality effectively.
+- Limited Complexity: Cannot model complex patterns or multiple seasonality effectively.
 
-- **Parameter Sensitivity:** Forecast accuracy is sensitive to the choice of smoothing parameters.
+- Parameter Sensitivity: Forecast accuracy is sensitive to the choice of smoothing parameters.
 
-- **No Causality:** Does not model causal relationships, only time-based patterns.
+- No Causality: Does not model causal relationships, only time-based patterns.
 
 Exponential smoothing is a useful tool for time series forecasting especially for short-term forecasts. It is commonly used in inventory management, financial analysis, and demand forecasting. Its simplicity and ease of implementation make it an excellent choice for beginners and practitioners looking for quick and reliable time series models. For more complex patterns, combining exponential smoothing with other advanced techniques, such as ARIMA or machine learning models, can provide even better forecasting performance.
 
 ## Key Takeaways
 
-- **Simple Exponential Smoothing (SES):** Best for data without trends or seasonality.
-- **Double Exponential Smoothing (DES):** Captures linear trends but no seasonality.
-- **Triple Exponential Smoothing (Holt-Winters):** Captures both trends and seasonality.
+- Simple Exponential Smoothing (SES): Best for data without trends or seasonality.
+- Double Exponential Smoothing (DES): Captures linear trends but no seasonality.
+- Triple Exponential Smoothing (Holt-Winters): Captures both trends and seasonality.
 - A smoothed version of the current value.
