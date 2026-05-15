@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Exponential smoothing evaluations using consolidated utilities."""
 
+import logging
 from pathlib import Path
 
-import logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 # Add src to path
@@ -16,24 +15,24 @@ from dataclasses import dataclass
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import statsmodels.api as sm
+from sklearn.metrics import mean_absolute_error
+from sklearn.model_selection import TimeSeriesSplit
 
 # Import consolidated utilities (signalplot already applied in src/__init__.py)
 from src import (
+    ensure_output_dir,
     load_config,
     load_time_series,
     save_plot,
-    ensure_output_dir,
 )
-
-from sklearn.metrics import mean_absolute_error
-from sklearn.model_selection import TimeSeriesSplit
 from statsmodels.tsa.holtwinters import ExponentialSmoothing
-import statsmodels.api as sm
 
 
 @dataclass
 class Config:
     """Configuration dataclass for this template."""
+
     data_path: Path
     date_col: str
     value_col: str
@@ -53,10 +52,12 @@ def parse_config(config_dict: dict, script_dir: Path) -> Config:
     """Parse config dictionary into Config dataclass."""
     repo_root = script_dir.parent
     data_path = repo_root / "data" / config_dict["data"]["input_file"]
-    output_dir = ensure_output_dir(Path(script_dir) / config_dict["output"]["output_dir"])
-    
+    output_dir = ensure_output_dir(
+        Path(script_dir) / config_dict["output"]["output_dir"]
+    )
+
     experiment = config_dict["experiment"]
-    
+
     return Config(
         data_path=data_path,
         date_col=config_dict["data"]["date_col"],
@@ -80,13 +81,13 @@ def load_series(config: Config) -> pd.Series:
     series = load_time_series(
         str(config.data_path),
         date_column=config.date_col,
-        value_column=config.value_col
+        value_column=config.value_col,
     )
-    
+
     # Apply frequency conversion if needed
     if config.freq:
         series = series.asfreq(config.freq)
-    
+
     return series.astype(float)
 
 
@@ -104,7 +105,7 @@ def rolling_origin_ets(
         end_idx = train_idx[-1]
         train_series = series.iloc[: end_idx + 1]
         future_series = series.iloc[end_idx + 1 : end_idx + 1 + config.horizon]
-        
+
         if future_series.empty:
             continue
 
@@ -114,7 +115,7 @@ def rolling_origin_ets(
             seasonal="add",
             seasonal_periods=config.season,
         ).fit(optimized=True)
-        
+
         forecast = model.forecast(len(future_series))
         mae = mean_absolute_error(future_series.values, forecast.values)
         pd.concat([maes, mae])
@@ -127,7 +128,12 @@ def rolling_origin_ets(
     return mean_mae, last_true, last_pred
 
 
-def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: pd.Series | None, plot: bool = False) -> None:
+def plot_ets_forecast(
+    series: pd.Series,
+    config: Config,
+    last_forecast: pd.Series | None,
+    plot: bool = False,
+) -> None:
     """Plot ETS forecast with confidence intervals."""
     start_2024 = pd.Timestamp("2024-01-01")
     history_end = pd.Timestamp("2024-12-01")
@@ -144,7 +150,7 @@ def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: pd.Serie
         seasonal="add",
         seasonal_periods=config.season,
     ).fit(optimized=True)
-    
+
     forecast = ets_model.forecast(len(forecast_index))
     residuals = series.loc[:history_end] - ets_model.fittedvalues
     sigma = float(residuals.std(ddof=1)) if len(residuals) else 0.0
@@ -155,12 +161,19 @@ def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: pd.Serie
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.plot(history.index, history.values, color="#555555", lw=1.5, label="History")
         ax.axvline(config.forecast_start, color="#777777", linestyle="--", lw=1)
-    
+
         if not actual.empty:
-            ax.plot(actual.index, actual.values, color="#1f77b4", lw=1.8, label="Actual")
-    
+            ax.plot(
+                actual.index, actual.values, color="#1f77b4", lw=1.8, label="Actual"
+            )
+
         ax.fill_between(
-            forecast.index, lower.values, upper.values, color="red", alpha=0.08, linewidth=0
+            forecast.index,
+            lower.values,
+            upper.values,
+            color="red",
+            alpha=0.08,
+            linewidth=0,
         )
         ax.plot(forecast.index, forecast.values, color="red", lw=2.0, label="Forecast")
 
@@ -214,7 +227,9 @@ def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: pd.Serie
     logger.info(f" ETS plot saved -> {config.ets_plot}")
 
 
-def plot_generation_comparison(series: pd.Series, config: Config, plot: bool = False) -> None:
+def plot_generation_comparison(
+    series: pd.Series, config: Config, plot: bool = False
+) -> None:
     """Plot comparison between ETS and SARIMAX."""
     ets_model = ExponentialSmoothing(
         series,
@@ -222,7 +237,7 @@ def plot_generation_comparison(series: pd.Series, config: Config, plot: bool = F
         seasonal="add",
         seasonal_periods=config.season,
     ).fit(optimized=True)
-    
+
     sarimax_model = sm.tsa.statespace.SARIMAX(
         series,
         order=(1, 1, 1),
@@ -244,10 +259,12 @@ def plot_generation_comparison(series: pd.Series, config: Config, plot: bool = F
     if plot:
         fig, ax = plt.subplots(figsize=(10, 5))
         ax.plot(history.index, history.values, label="History", color="#888888", lw=1.5)
-    
+
         if not actual.empty:
-            ax.plot(actual.index, actual.values, label="Actual", color="#444444", lw=1.8)
-    
+            ax.plot(
+                actual.index, actual.values, label="Actual", color="#444444", lw=1.8
+            )
+
         ax.plot(
             forecast_index,
             ets_forecast.values,
@@ -277,27 +294,27 @@ def plot_generation_comparison(series: pd.Series, config: Config, plot: bool = F
 def main() -> None:
     """Main execution function."""
     script_dir = Path(__file__).parent
-    
+
     # Load configuration using consolidated loader
     config_dict = load_config()
-    
+
     # Parse into Config dataclass for this template
     config = parse_config(config_dict, script_dir)
-    
+
     # Load series using consolidated loader
     series = load_series(config)
     logger.info(f"Loaded {len(series)} data points")
-    
+
     # Rolling origin evaluation
     _, last_true, last_pred = rolling_origin_ets(series, config)
-    
+
     # Plot ETS forecast
     if last_pred is not None:
         plot_ets_forecast(series, config, last_pred)
-    
+
     # Plot comparison
     plot_generation_comparison(series, config)
-    
+
     logger.info("\n Exponential smoothing analysis complete")
 
 
