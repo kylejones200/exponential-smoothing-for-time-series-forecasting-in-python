@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """Exponential smoothing evaluations using consolidated utilities."""
 
-import sys
 from pathlib import Path
 
 import logging
@@ -13,7 +12,6 @@ logger = logging.getLogger(__name__)
 # Add src to path
 
 from dataclasses import dataclass
-from typing import Tuple, Optional
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -25,7 +23,6 @@ from src import (
     load_time_series,
     save_plot,
     ensure_output_dir,
-    get_output_dir,
 )
 
 from sklearn.metrics import mean_absolute_error
@@ -95,7 +92,7 @@ def load_series(config: Config) -> pd.Series:
 
 def rolling_origin_ets(
     series: pd.Series, config: Config
-) -> Tuple[float, Optional[pd.Series], Optional[pd.Series]]:
+) -> tuple[float, pd.Series | None, pd.Series | None]:
     """Rolling origin evaluation for ETS model."""
     idx = np.arange(len(series))
     splitter = TimeSeriesSplit(n_splits=config.n_splits)
@@ -130,7 +127,7 @@ def rolling_origin_ets(
     return mean_mae, last_true, last_pred
 
 
-def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: Optional[pd.Series], plot: bool = False) -> None:
+def plot_ets_forecast(series: pd.Series, config: Config, last_forecast: pd.Series | None, plot: bool = False) -> None:
     """Plot ETS forecast with confidence intervals."""
     start_2024 = pd.Timestamp("2024-01-01")
     history_end = pd.Timestamp("2024-12-01")
