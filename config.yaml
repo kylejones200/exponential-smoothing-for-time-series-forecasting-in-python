@@ -1,21 +1,21 @@
 data:
-  input_file: "Net_generation_United_States_all_sectors_monthly.csv"
-  date_col: "date"
-  value_col: "value"
-  freq: "MS"
-
+  input_file: Net_generation_United_States_all_sectors_monthly.csv
+  date_col: date
+  value_col: value
+  freq: MS
 evaluation:
   horizon: 12
   n_splits: 5
   season: 12
-
 experiment:
-  history_end: "2024-12-01"
-  forecast_start: "2025-01-01"
-  forecast_end: "2025-08-01"
-
+  history_end: '2024-12-01'
+  forecast_start: '2025-01-01'
+  forecast_end: '2025-08-01'
 output:
-  ets_plot: "eia_expsmooth_last_fold.png"
-  comparison_plot: "eia_generation_last_fold.png"
-  output_dir: "outputs"
-
+  ets_plot: eia_expsmooth_last_fold.png
+  comparison_plot: eia_generation_last_fold.png
+  output_dir: outputs
+cv:
+  n_splits: 5
+  strategy: time_series
+  gap: 0

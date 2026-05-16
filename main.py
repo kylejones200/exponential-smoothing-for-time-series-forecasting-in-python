@@ -118,7 +118,7 @@ def rolling_origin_ets(
 
         forecast = model.forecast(len(future_series))
         mae = mean_absolute_error(future_series.values, forecast.values)
-        pd.concat([maes, mae])
+        maes.append(mae)
 
         last_true = future_series
         last_pred = forecast
