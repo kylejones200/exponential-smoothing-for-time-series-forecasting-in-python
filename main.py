@@ -205,7 +205,6 @@ def plot_ets_forecast(
         fig.tight_layout()
         fig.savefig(config.ets_plot, dpi=300, bbox_inches="tight")
         plt.close(fig)
-        plt.close(fig)
     logger.info(f" ETS plot saved -> {config.ets_plot}")
 
 
@@ -258,7 +257,6 @@ def plot_generation_comparison(series: pd.Series, config: Config, plot: bool = F
         ax.legend(frameon=False)
         fig.tight_layout()
         fig.savefig(config.comparison_plot, dpi=300, bbox_inches="tight")
-        plt.close(fig)
         plt.close(fig)
     logger.info(f" ETS vs SARIMAX plot saved -> {config.comparison_plot}")
 
